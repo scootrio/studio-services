@@ -1,16 +1,17 @@
 const Koa = require('koa');
-const Router = require('@koa/router');
+const cors = require('@koa/cors');
+const bodyParser = require('koa-bodyparser');
 const spa = require('./spa');
 const api = require('./api');
 
 const app = new Koa();
 
-const router = new Router();
-router.use('/api/v0', api.routes());
+app.use(cors());
+app.use(bodyParser());
 
-app.use(spa.routes());
-app.use(router.routes());
+app.use(spa.routes()).use(spa.allowedMethods());
+app.use(api.routes()).use(api.allowedMethods());
 
-app.listen(3000, () => {
+app.listen(3030, () => {
   console.log('Studio Services are running');
 });

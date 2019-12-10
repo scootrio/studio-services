@@ -5,10 +5,17 @@ const path = require('path');
 
 const router = new Router();
 
-router.get('/', async ctx => {
-  await send(ctx, 'index.html', { root: path.join(__dirname, '/public') });
+const publicDir = path.join(__dirname, 'public');
+const appDir = path.join(publicDir, 'app');
+
+router.get(['/', 'index', '/index.html'], async ctx => {
+  await send(ctx, 'index.html', { root: appDir });
 });
 
-router.use(serve(path.join(__dirname, '/public')));
+router.get('/main.js', async ctx => {
+  await send(ctx, 'main.js', { root: appDir });
+});
+
+router.use(serve(publicDir));
 
 module.exports = router;

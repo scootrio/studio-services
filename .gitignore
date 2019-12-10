@@ -1,3 +1,6 @@
+# Webapp (lives in another repo)
+src/public/app
+
 # IDE
 .vscode/
 
