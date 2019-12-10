@@ -1,3 +1,6 @@
+# Generated files
+.scoots/
+
 # Webapp (lives in another repo)
 src/public/app
 
