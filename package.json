@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node .",
-    "debug": "node --inspect ."
+    "debug": "node --inspect .",
+    "postinstall": "npm i --no-save serverless-iam-roles-per-function"
   },
   "repository": {
     "type": "git",
@@ -21,12 +22,14 @@
   "dependencies": {
     "@koa/cors": "^3.0.0",
     "@koa/router": "^8.0.3",
+    "chalk": "^3.0.0",
     "koa": "^2.11.0",
     "koa-bodyparser": "^4.2.1",
     "koa-send": "^5.0.0",
+    "koa-session": "^5.12.3",
     "koa-static": "^5.0.0",
     "scootr": "^0.1.0",
     "scootr-aws": "^0.1.0",
-    "serverless-iam-roles-per-function": "^2.0.2"
+    "uuid": "^3.3.3"
   }
 }
