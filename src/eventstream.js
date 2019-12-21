@@ -3,9 +3,7 @@
  * to receive notifications from the asynchronous actions conducted by the server.
  */
 const { Readable } = require('stream');
-const { error } = require('./logger');
-
-module.exports = eventstream;
+const { debug, info, error } = require('./logger');
 
 const _streams = {};
 
@@ -23,6 +21,7 @@ class EventStream extends Readable {
   emit(event, data, ...args) {
     super.emit(event, data, ...args);
     if (event.includes(':')) {
+      debug(event, data);
       this.push('event: ' + event + '\ndata: ' + JSON.stringify(data) + '\n\n');
     }
   }
@@ -33,13 +32,22 @@ function eventstream(id) {
     return _streams[id];
   }
 
+  info('Creating event stream ' + id);
+
   const es = new EventStream();
 
   es.on('error', err => {
     error(err.message);
   });
 
+  es.on('close', () => {
+    info('Closing event stream ' + id);
+    delete _streams[id];
+  });
+
   _streams[id] = es;
 
   return es;
 }
+
+module.exports = eventstream;
