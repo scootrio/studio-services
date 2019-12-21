@@ -3,8 +3,6 @@
  *
  * See the `deploy.js` file for more information about how deployments are handled by Scootr.
  */
-module.exports = queue;
-
 const _queues = {};
 
 /**
@@ -34,59 +32,82 @@ function queue(name) {
     pollMs: 1000
   };
 
-  const q = {
-    /**
-     * Configures the queue according to the provided options.
-     *
-     * @param {Object} options The options used to configure the queue.
-     * @param {Number} [options.maxConcurrent=-1] The maximum number of requests that can be processed at any given time.
-     *     A value of -1 indicates no maximum.
-     * @param {Number} [options.pollMs=1000] The number of milliseconds to wait before polling a previously empty queue to
-     *     see if there is a request waiting to be processed.
-     */
-    configure(options) {
-      _options = {
-        ..._options,
-        ...options
-      };
-    },
+  /**
+   * Configures the queue according to the provided options.
+   *
+   * @param {Object} options The options used to configure the queue.
+   * @param {Number} [options.maxConcurrent=-1] The maximum number of requests that can be processed at any given time.
+   *     A value of -1 indicates no maximum.
+   * @param {Number} [options.pollMs=1000] The number of milliseconds to wait before polling a previously empty queue to
+   *     see if there is a request waiting to be processed.
+   */
+  function configure(options) {
+    _options = {
+      ..._options,
+      ...options
+    };
+  }
 
-    /**
-     * Adds a new request to the queue to be processed later.
-     *
-     * @param {Object} request The request to add to the queue
-     */
-    push(request) {
-      if (!_open) throw new Error('Cannot push onto a closed queue');
-      _requests.push(request);
-    },
+  /**
+   * Adds a new request to the queue to be processed later.
+   *
+   * @param {Object} request The request to add to the queue
+   */
+  function push(request) {
+    if (!_open) throw new Error('Cannot push onto a closed queue');
+    _requests.push(request);
+  }
 
-    /**
-     * Continuously processes a job from the request queue.
-     *
-     * @param {AsyncFunction} action The action used to process jobs from the queue.
-     */
-    async process(action) {
-      if (!_open) throw new Error('Cannot process from a closed queue');
-      ++_processors;
-      while (_open) {
-        if (
-          (_options.maxConcurrent < 0 || (_options.maxConcurrent > 0 && _running < _options.maxConcurrent)) &&
-          _requests.length > 0
-        ) {
-          await action(_requests.shift());
-        } else {
-          await _sleep(_options.pollMs);
-        }
+  /**
+   * Pulls the next item from the queue.
+   */
+  function pull() {
+    if (!_open) throw new Error('Cannot pull from a closed queue');
+    return _requests.length ? _requests.shift() : null;
+  }
+
+  function requests() {
+    return _requests;
+  }
+
+  /**
+   * Continuously processes a job from the request queue.
+   *
+   * @param {AsyncFunction} action The action used to process jobs from the queue.
+   */
+  async function process(action) {
+    if (!_open) throw new Error('Cannot process from a closed queue');
+    ++_processors;
+    while (_open) {
+      if (
+        (_options.maxConcurrent < 0 || (_options.maxConcurrent > 0 && _running < _options.maxConcurrent)) &&
+        _requests.length > 0
+      ) {
+        await action(pull());
+      } else {
+        await _sleep(_options.pollMs);
       }
-      if (--_processors === 0) {
-        delete _queues[name];
-      }
-    },
-
-    close() {
-      _open = false;
     }
+    if (--_processors === 0) {
+      delete _queues[name];
+    }
+  }
+
+  /**
+   * Closes the queue, causing all processors to terminate and prevent further pushing, pulling, and processing.
+   */
+  function close() {
+    _open = false;
+    delete _queues[name];
+  }
+
+  const q = {
+    configure,
+    push,
+    pull,
+    process,
+    requests,
+    close
   };
 
   _queues[name] = q;
@@ -99,3 +120,5 @@ function _sleep(ms) {
     setTimeout(resolve, ms);
   });
 }
+
+module.exports = queue;
