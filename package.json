@@ -4,8 +4,9 @@
   "description": "Backend services for the Scoot runtime studio",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node .",
+    "test": "mocha",
+    "start": "NODE_ENV=development STUDIO_SERVICES_LOG_LEVEL=debug node .",
+    "verbose": "NODE_ENV=development STUDIO_SERVICES_LOG_LEVEL=trace node .",
     "debug": "node --inspect .",
     "postinstall": "npm i --no-save serverless-iam-roles-per-function"
   },
@@ -31,5 +32,9 @@
     "scootr": "^0.1.0",
     "scootr-aws": "^0.1.0",
     "uuid": "^3.3.3"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.2.2"
   }
 }
