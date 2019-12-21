@@ -23,6 +23,7 @@ router.get('/subscribe', async ctx => {
   socket.on('close', close);
   socket.on('error', close);
   function close() {
+    socket.removeListener('close', close);
     socket.removeListener('error', close);
   }
 });
