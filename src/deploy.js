@@ -19,12 +19,11 @@ const { NODE_12X } = require('scootr-aws/runtimes');
 const { DYNAMO_DB } = require('scootr-aws/storage');
 const { info, error } = require('./logger');
 const eventstream = require('./eventstream');
+const queue = require('./queue');
 
-require('./queue')('requests').process(async request => {
-  const { id, config } = request;
+const requests = queue('request');
 
-  // TODO: get the event emitter with the request's session ID so we can send push notifications on our progress
-  // back to the client.
+async function processRequest({ id, config }) {
   const producer = eventstream(id);
 
   const app = application(config.application.id, US_WEST_2).name(config.application.name);
@@ -98,4 +97,6 @@ require('./queue')('requests').process(async request => {
     error('Deployment failed to complete');
     producer.emit('deploy:error', { message: 'Deployment failed to complete', details: err.message });
   }
-});
+}
+
+requests.process(processRequest);
