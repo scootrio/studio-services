@@ -6,6 +6,7 @@ const uuid = require('uuid/v4');
 const spa = require('./spa');
 const api = require('./api');
 const subscribe = require('./subscribe');
+const { info } = require('./logger');
 
 const app = new Koa();
 
@@ -37,6 +38,7 @@ app.use(subscribe.routes()).use(subscribe.allowedMethods());
 require('./deploy');
 
 // Start the services
-app.listen(3030, () => {
-  console.log('Studio Services are running');
+const port = process.env.STUDIO_SERVICES_PORT || 3030;
+app.listen(port, () => {
+  info('Running on port ' + port);
 });
