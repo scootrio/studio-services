@@ -49,7 +49,7 @@ if (config.level <= Level.DEBUG) {
 }
 
 function shouldLog(level) {
-  !config.silent && config.level >= level;
+  return !config.silent && config.level >= level;
 }
 
 function trace(...args) {
