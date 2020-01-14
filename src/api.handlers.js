@@ -9,7 +9,7 @@ function using(queue) {
 }
 
 async function handleQueueDeployRequest(ctx) {
-  ctx.queue.push({ id: ctx.current.id, config: ctx.request.body });
+  ctx.current.queue.push({ id: ctx.current.id, config: ctx.request.body });
   ctx.status = 200;
   ctx.body = {
     message: 'Request has been queued for processing'

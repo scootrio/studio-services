@@ -24,7 +24,11 @@ app.use(session(CONFIG, app)).use(async (ctx, next) => {
 
 // Enable CORS requests
 // SECURITY: tighten the noose on security here
-app.use(cors());
+app.use(
+  cors({
+    credentials: true
+  })
+);
 
 // Enable automatic parsing of simple content types in requests
 app.use(bodyParser());
