@@ -5,7 +5,6 @@ const bodyParser = require('koa-bodyparser');
 const uuid = require('uuid/v4');
 const spa = require('./spa');
 const api = require('./api');
-const subscribe = require('./subscribe');
 const { info } = require('./logger');
 
 const app = new Koa();
@@ -36,7 +35,6 @@ app.use(bodyParser());
 // Register our routes
 app.use(spa.routes()).use(spa.allowedMethods());
 app.use(api.routes()).use(api.allowedMethods());
-app.use(subscribe.routes()).use(subscribe.allowedMethods());
 
 // Start our deployment worker
 require('./deploy');

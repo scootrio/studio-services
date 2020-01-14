@@ -1,8 +1,8 @@
 const Router = require('@koa/router');
-const eventstream = require('./eventstream');
-const { info, warn } = require('./logger');
+const eventstream = require('../eventstream');
+const { info, warn } = require('../logger');
 
-const router = new Router({prefix: '/api/v0/streams'});
+const router = new Router({prefix: '/streams'});
 
 const TIMEOUT = 2147483647;
 
