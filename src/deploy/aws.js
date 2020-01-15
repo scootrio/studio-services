@@ -21,7 +21,7 @@ function useAws(config) {
         .engine(enums.Storage.DynamoDb)
         .collection(s.name)
         .key(s.keyName)
-        .type(s.keyType);
+        .keytype(s.keyType);
     } else if (s.type === 'relational') {
       // TODO: implement relational storage
     } else {
@@ -50,9 +50,28 @@ function useAws(config) {
   }
 
   for (let r of config.references) {
-    if (t.type === 'storage') {
-      compute[r.source].use(storage[r.target], [r.allow], r.id);
-    } else if (t.type === 'topic') {
+    if (storage[r.target]) {
+      compute[r.source].use(
+        storage[r.target],
+        r.allows.map(function(a) {
+          switch (a) {
+            case 'create':
+              return scootr.actions.Create;
+            case 'read':
+              return scootr.actions.Read;
+            case 'update':
+              return scootr.actions.Update;
+            case 'delete':
+              return scootr.actions.Delete;
+            case '*':
+              return scootr.actions.All;
+            default:
+              throw new Error(`Failed to build application: The action '${a.toString()}' is not valid.`);
+          }
+        }),
+        r.id
+      );
+    } else if (internalEvents[r.target]) {
       // TODO: implement internal events
     } else {
       // TODO: throw an error

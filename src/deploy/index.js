@@ -30,7 +30,7 @@ async function processRequest({ id, config }) {
     // TODO: throw an error
   }
 
-  producer.emit('deploy:progress', { message: `Application built. Deploying with provider '${config.app.provider}'` });
+  producer.emit('deploy:progress', { message: `Application built. Deploying with provider '${config.app.provider}'.` });
 
   // Deploy
   try {
