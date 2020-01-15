@@ -5,9 +5,9 @@
   "main": "src/index.js",
   "scripts": {
     "test": "mocha",
-    "start": "NODE_ENV=development STUDIO_SERVICES_LOG_LEVEL=debug node .",
-    "verbose": "NODE_ENV=development STUDIO_SERVICES_LOG_LEVEL=trace node .",
-    "debug": "node --inspect .",
+    "start": "NODE_ENV=development STUDIO_SERVICES_LOG_LEVEL=trace node .",
+    "verbose": "NODE_ENV=development STUDIO_SERVICES_LOG_LEVEL=debug node .",
+    "debug": "NODE_ENV=development STUDIO_SERVICES_LOG_LEVEL=debug node --inspect .",
     "postinstall": "npm i --no-save serverless-iam-roles-per-function"
   },
   "repository": {
@@ -21,14 +21,10 @@
   },
   "homepage": "https://github.com/scootrs/studio-services#readme",
   "dependencies": {
-    "@koa/cors": "^3.0.0",
-    "@koa/router": "^8.0.3",
+    "@hapi/boom": "^9.0.0",
+    "@hapi/hapi": "^19.0.4",
+    "@hapi/yar": "^10.0.0",
     "chalk": "^3.0.0",
-    "koa": "^2.11.0",
-    "koa-bodyparser": "^4.2.1",
-    "koa-send": "^5.0.0",
-    "koa-session": "^5.12.3",
-    "koa-static": "^5.0.0",
     "scootr": "^0.1.0",
     "scootr-aws": "^0.1.0",
     "uuid": "^3.3.3"

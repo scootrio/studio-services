@@ -1,7 +1,7 @@
 require('chai').should();
-require('../src/logger').config.silent = true;
+require('../src/util/logger').config.silent = true;
 
-const eventstream = require('../src/eventstream');
+const eventstream = require('../src/util/eventstream');
 const { Writable } = require('stream');
 
 const listenForDoneOnStream = (stream, done) => {
@@ -36,7 +36,7 @@ const createWritableStreamForTest = (test, done) => {
 
 describe('EventStream', () => {
   it('should emit data to listeners', done => {
-    const e = eventstream('test-emit');
+    const e = eventstream.create('test-emit');
 
     let val = 1;
 
@@ -52,7 +52,7 @@ describe('EventStream', () => {
   });
 
   it('should pipe data in SSE format', done => {
-    const e = eventstream('test-sse');
+    const e = eventstream.create('test-sse');
 
     const vals = [1, 2, 3];
     const sses = vals.map(v => 'event: test:event\ndata: ' + v + '\n\n');

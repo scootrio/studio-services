@@ -1,8 +1,8 @@
 require('chai').should();
 
 const { Writable } = require('stream');
-const eventstream = require('../src/eventstream');
-const queue = require('../src/queue');
+const eventstream = require('../src/util/eventstream');
+const queue = require('../src/util/queue');
 
 const listenForDoneOnStream = (stream, done) => {
   let isDoneCalled = false;
@@ -36,7 +36,7 @@ const createWritableStreamForTest = (test, done) => {
 
 describe('Deploy', () => {
   it('should process a request from a queue', done => {
-    const e = eventstream('test');
+    const e = eventstream.create('test');
     const q = queue('test');
 
     let event = 'test:event';

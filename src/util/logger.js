@@ -4,8 +4,8 @@ const program = 'studio-services';
 const renderLevel = l => '[' + l + ']:';
 
 const Level = {
-  TRACE: 5,
-  DEBUG: 4,
+  DEBUG: 5,
+  TRACE: 4,
   INFO: 3,
   WARN: 2,
   ERROR: 1
@@ -52,12 +52,12 @@ function shouldLog(level) {
   return !config.silent && config.level >= level;
 }
 
-function trace(...args) {
-  shouldLog(Level.TRACE) && console.log(chalk.gray(program, renderLevel('trc'), ...args));
-}
-
 function debug(...args) {
   shouldLog(Level.DEBUG) && console.log(program, renderLevel(chalk.magenta('dbg')), ...args);
+}
+
+function trace(...args) {
+  shouldLog(Level.TRACE) && console.log(chalk.gray(program, renderLevel('trc'), ...args));
 }
 
 function info(...args) {

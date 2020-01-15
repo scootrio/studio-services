@@ -9,12 +9,10 @@ const _streams = {};
 
 class EventStream extends Readable {
   constructor() {
-    super({ objectMode: true });
-    this._events = [];
+    super();
   }
 
   _read() {
-    while (this._events.length && this.push(this._events.shift()));
     return false;
   }
 
@@ -23,26 +21,27 @@ class EventStream extends Readable {
     if (event.includes(':')) {
       debug(event, data);
       this.push('event: ' + event + '\ndata: ' + JSON.stringify(data) + '\n\n');
+      if (this._compressor) {
+        this._compressor.flush();
+      }
     }
+  }
+
+  setCompressor(comp) {
+    this._compressor = comp;
   }
 }
 
-function eventstream(id) {
-  if (_streams[id]) {
-    return _streams[id];
-  }
-
+function create(id) {
   info('Creating event stream ' + id);
-
   const es = new EventStream();
 
-  es.on('error', err => {
+  es.on('error', function(err) {
     error(err.message);
   });
 
-  es.on('close', () => {
+  es.on('close', function() {
     info('Closing event stream ' + id);
-    delete _streams[id];
   });
 
   _streams[id] = es;
@@ -50,4 +49,15 @@ function eventstream(id) {
   return es;
 }
 
-module.exports = eventstream;
+function get(id) {
+  if (!_streams[id]) {
+    return null;
+  }
+  info('Using event stream ' + id);
+  return _streams[id];
+}
+
+module.exports = {
+  create,
+  get
+};

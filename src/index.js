@@ -1,46 +1,72 @@
-const Koa = require('koa');
-const cors = require('@koa/cors');
-const session = require('koa-session');
-const bodyParser = require('koa-bodyparser');
-const uuid = require('uuid/v4');
-const spa = require('./spa');
-const api = require('./api');
-const { info } = require('./logger');
+'use strict';
 
-const app = new Koa();
+const Hapi = require('@hapi/hapi');
+const Yar = require('@hapi/yar');
+const Queue = require('./plugins/queue');
+const { info, error } = require('./util/logger');
+const routes = require('./routes');
+const queue = require('./util/queue');
+const processRequests = require('./deploy');
 
-// Configure our application keys used for cryptographic purposes
-app.keys = [process.env.STUDIO_SERVICES_KEY];
-
-// Initialize our session middleware
-const CONFIG = {
-  key: 'studio-services:session'
-};
-app.use(session(CONFIG, app)).use(async (ctx, next) => {
-  if (!ctx.session.id) ctx.session.id = uuid();
-  await next();
-});
-
-// Enable CORS requests
-// SECURITY: tighten the noose on security here
-app.use(
-  cors({
-    credentials: true
-  })
-);
-
-// Enable automatic parsing of simple content types in requests
-app.use(bodyParser());
-
-// Register our routes
-app.use(spa.routes()).use(spa.allowedMethods());
-app.use(api.routes()).use(api.allowedMethods());
-
-// Start our deployment worker
-require('./deploy');
-
-// Start the services
 const port = process.env.STUDIO_SERVICES_PORT || 3030;
-app.listen(port, () => {
-  info('Running on port ' + port);
-});
+const host = process.env.STUDIO_SERVICES_HOST || 'localhost';
+
+const sessionPassword = process.env.STUDIO_SERVICES_SESSION_PASSWORD;
+if (!sessionPassword || sessionPassword.length < 32) {
+  error('Studio Services requires a password to encrypt session cookes. The password must be at least 32 characters.');
+  process.exit(1);
+}
+
+(async function() {
+  const server = Hapi.server({
+    port,
+    host,
+    routes: {
+      cors: {
+        credentials: true
+      }
+    }
+  });
+
+  await server.register([
+    // Session Management
+    //
+    {
+      plugin: Yar,
+      options: {
+        name: 'studio-services.session',
+        storeBlank: false,
+        cookieOptions: {
+          password: sessionPassword,
+          isSecure: process.env.NODE_ENV !== 'development'
+        }
+      }
+    },
+
+    // Job Queue
+    //
+    {
+      plugin: Queue
+    }
+  ]);
+
+  // Route Registration
+  //
+  for (let route of routes) {
+    server.route(route);
+  }
+
+  // Start our "background" process that will be handling deployment requests
+  //
+  const requests = queue('requests');
+  requests.process(processRequests);
+
+  // Startup the server and get things going
+  //
+  try {
+    await server.start();
+    info('Studio Services are listening on port ' + port);
+  } catch (err) {
+    error('Failed to start Studio Services: ' + err.message);
+  }
+})();

@@ -11,15 +11,12 @@
  *
  * When the process has finished, it will send a 'done' event to the EventEmitter.
  */
-const { info, error } = require('../logger');
-const eventstream = require('../eventstream');
-const queue = require('../queue');
+const { info, error } = require('../util/logger');
+const eventstream = require('../util/eventstream');
 const useAws = require('./aws');
 
-const requests = queue('requests');
-
 async function processRequest({ id, config }) {
-  const producer = eventstream(id);
+  const producer = eventstream.get(id);
 
   producer.emit('deploy:progress', { message: 'Building application' });
 
@@ -47,4 +44,4 @@ async function processRequest({ id, config }) {
   }
 }
 
-requests.process(processRequest);
+module.exports = processRequest;

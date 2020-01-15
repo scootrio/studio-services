@@ -1,6 +1,6 @@
 require('chai').should();
 
-const queue = require('../src/queue');
+const queue = require('../src/util/queue');
 
 describe('Queue', () => {
   let q;
