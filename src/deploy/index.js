@@ -18,30 +18,41 @@ const useAws = require('./aws');
 async function processRequest({ id, config }) {
   const producer = eventstream.get(id);
 
-  producer.emit('deploy:progress', { message: 'Building application' });
+  producer.emit('deployment:progress', { message: 'Building application' });
 
   let build = null;
-  switch (config.app.provider) {
-    case 'aws':
-      build = useAws(config);
-      break;
+  try {
+    switch (config.app.provider) {
+      case 'aws':
+        build = useAws(config);
+        break;
 
-    default:
-    // TODO: throw an error
+      default:
+        if (!config.app.provider) {
+          throw new Error('The deployment is missing a provider');
+        } else {
+          throw new Error(`The provider type ${config.app.provider} is invalid`);
+        }
+    }
+  } catch (err) {
+    let payload = { message: 'Failed to build deployment', details: err.message };
+    producer.emit('deployment:failure', payload);
+    producer.emit('deployment:finish');
+    return;
   }
 
-  producer.emit('deploy:progress', { message: `Application built. Deploying with provider '${config.app.provider}'.` });
+  producer.emit('deployment:progress', { message: `Application built. Deploying to hosting provider.` });
 
-  // Deploy
   try {
     info('Deploying configuration');
     let results = await build.deploy();
     info('Deployment completed');
-    producer.emit('deploy:done', { message: 'Successfully deployed configuration', results });
+    producer.emit('deployment:success', { message: 'Successfully deployed application', results });
   } catch (err) {
     error('Deployment failed to complete');
-    producer.emit('deploy:error', { message: 'Deployment failed to complete', details: err.message });
+    producer.emit('deployment:failure', { message: 'Deployment failed to complete', details: err.message });
   }
+  producer.emit('deployment:finish');
 }
 
 module.exports = processRequest;

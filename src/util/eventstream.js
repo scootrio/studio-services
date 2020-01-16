@@ -19,6 +19,7 @@ class EventStream extends Readable {
   emit(event, data, ...args) {
     super.emit(event, data, ...args);
     if (event.includes(':')) {
+      if (!data) data = {};
       debug(event, data);
       this.push('event: ' + event + '\ndata: ' + JSON.stringify(data) + '\n\n');
       if (this._compressor) {

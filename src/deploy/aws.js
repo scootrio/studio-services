@@ -23,9 +23,9 @@ function useAws(config) {
         .key(s.keyName)
         .keytype(s.keyType);
     } else if (s.type === 'relational') {
-      // TODO: implement relational storage
+      throw new Error('Relational storage types are not yet supported by the Studio Services');
     } else {
-      // TODO: throw an error
+      throw new Error(`The storage resource "${s.id}" has an invalid type of "${s.type}"`);
     }
   }
 
@@ -36,7 +36,7 @@ function useAws(config) {
         .path(ee.path)
         .method(ee.method);
     } else {
-      // TODO: throw an error
+      throw new Error(`The external event resource "${ee.id}" has an invalid type of "${ee.type}"`);
     }
   }
 
@@ -53,7 +53,7 @@ function useAws(config) {
     } else if (internalEvents[t.source]) {
       compute[t.target].on(internalEvents[t.source]);
     } else {
-      // TODO: throw an error
+      throw new Error(`Neither the source "${t.source}" nor the target "${t.target}" of the trigger connection exists`);
     }
   }
 
@@ -63,7 +63,7 @@ function useAws(config) {
     } else if (internalEvents[r.target]) {
       compute[r.source].use(internalEvents[r.target], r.allows.map(mapAction), r.id);
     } else {
-      // TODO: throw an error
+      throw new Error(`Neither the source nor the target of the reference "${r.id}" exists`);
     }
   }
 
@@ -129,7 +129,7 @@ function mapAction(a) {
     case '*':
       return scootr.actions.All;
     default:
-      throw new Error(`Failed to build application: The action '${a.toString()}' is not valid.`);
+      throw new Error(`The action '${a}' is not valid.`);
   }
 }
 
