@@ -35,7 +35,7 @@ async function processRequest({ id, config }) {
   // Deploy
   try {
     info('Deploying configuration');
-    let results = await build.app.deploy(build.driver, config.app.region);
+    let results = await build.deploy();
     info('Deployment completed');
     producer.emit('deploy:done', { message: 'Successfully deployed configuration', results });
   } catch (err) {

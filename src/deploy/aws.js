@@ -41,38 +41,27 @@ function useAws(config) {
   }
 
   for (let ie of config.events.internal) {
-    // TODO: add support for internal events
+    internalEvents[ie.id] = scootr
+      .topic(ie.id)
+      .broker(enums.Brokers.SNS)
+      .name(ie.name);
   }
 
   for (let t of config.triggers) {
-    compute[t.target].on(externalEvents[t.source]);
-    // TODO: add support for internal events
+    if (externalEvents[t.source]) {
+      compute[t.target].on(externalEvents[t.source]);
+    } else if (internalEvents[t.source]) {
+      compute[t.target].on(internalEvents[t.source]);
+    } else {
+      // TODO: throw an error
+    }
   }
 
   for (let r of config.references) {
     if (storage[r.target]) {
-      compute[r.source].use(
-        storage[r.target],
-        r.allows.map(function(a) {
-          switch (a) {
-            case 'create':
-              return scootr.actions.Create;
-            case 'read':
-              return scootr.actions.Read;
-            case 'update':
-              return scootr.actions.Update;
-            case 'delete':
-              return scootr.actions.Delete;
-            case '*':
-              return scootr.actions.All;
-            default:
-              throw new Error(`Failed to build application: The action '${a.toString()}' is not valid.`);
-          }
-        }),
-        r.id
-      );
+      compute[r.source].use(storage[r.target], r.allows.map(mapAction), r.id);
     } else if (internalEvents[r.target]) {
-      // TODO: implement internal events
+      compute[r.source].use(internalEvents[r.target], r.allows.map(mapAction), r.id);
     } else {
       // TODO: throw an error
     }
@@ -82,7 +71,66 @@ function useAws(config) {
 
   app.withAll(Array.from(Object.values(compute)));
 
-  return { app, driver };
+  return {
+    deploy: async function() {
+      // Deploy our application and get the driver result
+      const result = await app.deploy(driver, config.app.region);
+
+      // Map our driver result back into configuration to give back to the client
+      const results = {
+        app: {},
+        compute: [],
+        storage: [],
+        events: {
+          internal: [],
+          external: []
+        },
+        triggers: [],
+        references: []
+      };
+
+      // Start by mapping our metadata from the driver result
+      results.app = result.meta;
+
+      // We need to get the URLs of all our external HTTP events so that we can send them back to the client
+      for (let event of result.events) {
+        if (event.type === 'http') {
+          // Find the ID of the event that has the matching path and method and add it to our result set
+          let ee = config.events.external.find(e => e.path === event.path && e.method.toLowerCase() === event.method);
+          results.events.external.push({
+            id: ee.id,
+            url: event.url,
+            method: event.method
+          });
+        } else {
+          // TODO: handle other event types (none yet to worry about)
+        }
+      }
+
+      // Now we need to get the actual name of the resource that was deployed on AWS for each of our compute instances
+      results.compute = [...result.compute];
+
+      // Send it off!
+      return results;
+    }
+  };
+}
+
+function mapAction(a) {
+  switch (a) {
+    case 'create':
+      return scootr.actions.Create;
+    case 'read':
+      return scootr.actions.Read;
+    case 'update':
+      return scootr.actions.Update;
+    case 'delete':
+      return scootr.actions.Delete;
+    case '*':
+      return scootr.actions.All;
+    default:
+      throw new Error(`Failed to build application: The action '${a.toString()}' is not valid.`);
+  }
 }
 
 module.exports = useAws;
