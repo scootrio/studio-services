@@ -26,7 +26,12 @@ function handleGetToStreamListen(request, h) {
 
   // Establish our Server-Side Events channel
   info('Listening on event stream');
-  const stream = eventstream.get(request.yar.id);
+  let stream = eventstream.get(request.yar.id);
+  if (!stream) {
+    // The session persisted but the server went down and lost the in-memory stream. Create a new one to use
+    // with the same session.
+    stream = eventstream.create(request.yar.id);
+  }
   stream.on('close', function() {
     request.yar.set('isStreaming', false);
   });
