@@ -13,7 +13,7 @@
  */
 const { info, error } = require('../util/logger');
 const eventstream = require('../util/eventstream');
-const useAws = require('./aws');
+const buildForAws = require('./aws');
 
 async function processRequest({ id, config }) {
   const producer = eventstream.get(id);
@@ -24,7 +24,7 @@ async function processRequest({ id, config }) {
   try {
     switch (config.app.provider) {
       case 'aws':
-        build = useAws(config);
+        build = buildForAws(config);
         break;
 
       default:

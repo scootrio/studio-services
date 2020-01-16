@@ -1,7 +1,7 @@
 const scootr = require('scootr');
 const { driver, enums } = require('scootr-aws');
 
-function useAws(config) {
+function buildForAws(config) {
   const compute = {};
   const storage = {};
   const internalEvents = {};
@@ -133,4 +133,4 @@ function mapAction(a) {
   }
 }
 
-module.exports = useAws;
+module.exports = buildForAws;
