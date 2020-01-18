@@ -19,7 +19,7 @@ function buildForAws(config) {
       storage[s.id] = scootr
         .storage(s.id, scootr.types.KeyValueStorage)
         .engine(enums.Storage.DynamoDb)
-        .collection(s.name)
+        .collection(s.collection)
         .key(s.keyName)
         .keytype(s.keyType);
     } else if (s.type === 'relational') {
