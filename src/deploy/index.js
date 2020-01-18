@@ -11,14 +11,17 @@
  *
  * When the process has finished, it will send a 'done' event to the EventEmitter.
  */
-const { info, error } = require('../util/logger');
 const eventstream = require('../util/eventstream');
 const buildForAws = require('./aws');
+const logger = require('../util/logger');
 
 async function processRequest({ id, config }) {
+  logger.info('Processing request for session', id);
   const producer = eventstream.get(id);
 
   producer.emit('deployment:progress', { message: 'Building application' });
+
+  logger.trace('Building application');
 
   let build = null;
   try {
@@ -43,13 +46,15 @@ async function processRequest({ id, config }) {
 
   producer.emit('deployment:progress', { message: `Application built. Deploying to hosting provider.` });
 
+  logger.trace('Application built');
+
   try {
-    info('Deploying configuration');
+    logger.info('Deploying configuration');
     let results = await build.deploy();
-    info('Deployment completed');
+    logger.info('Deployment completed');
     producer.emit('deployment:success', { message: 'Successfully deployed application', results });
   } catch (err) {
-    error('Deployment failed to complete');
+    logger.error('Deployment failed to complete');
     producer.emit('deployment:failure', { message: 'Deployment failed to complete', details: err.message });
   }
   producer.emit('deployment:finish');

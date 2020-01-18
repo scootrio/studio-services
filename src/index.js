@@ -3,7 +3,8 @@
 const Hapi = require('@hapi/hapi');
 const Yar = require('@hapi/yar');
 const Queue = require('./plugins/queue');
-const { info, error } = require('./util/logger');
+const Logger = require('hapi-pino');
+const logger = require('./util/logger');
 const routes = require('./routes');
 const queue = require('./util/queue');
 const processRequests = require('./deploy');
@@ -47,6 +48,16 @@ if (!sessionPassword || sessionPassword.length < 32) {
     //
     {
       plugin: Queue
+    },
+
+    // Logging
+    //
+    {
+      plugin: Logger,
+      options: {
+        name: 'studio-services',
+        level: process.env.STUDIO_SERVICES_LOG_LEVEL || 'info'
+      }
     }
   ]);
 
@@ -65,8 +76,7 @@ if (!sessionPassword || sessionPassword.length < 32) {
   //
   try {
     await server.start();
-    info('Studio Services are listening on port ' + port);
   } catch (err) {
-    error('Failed to start Studio Services: ' + err.message);
+    logger.error('Failed to start Studio Services: ' + err.message);
   }
 })();

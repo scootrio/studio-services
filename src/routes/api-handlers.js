@@ -1,4 +1,3 @@
-const { info } = require('../util/logger');
 const Boom = require('@hapi/boom');
 const eventstream = require('../util/eventstream');
 
@@ -10,7 +9,7 @@ function handlePostToDeploy(request, h) {
 }
 
 function handleGetToStreamSubscribe(request, h) {
-  info('Subscription request received. Opening event stream');
+  request.logger.info('Subscription request received. Opening event stream');
   eventstream.create(request.yar.id);
   request.yar.set('isStreaming', true);
   return {
@@ -20,12 +19,12 @@ function handleGetToStreamSubscribe(request, h) {
 
 function handleGetToStreamListen(request, h) {
   if (!request.yar.get('isStreaming')) {
-    warn('Attempt to listen without first subscribing');
+    request.logger.warn('Attempt to listen without first subscribing');
     Boom.badRequest('Invalid request to listen without subscription');
   }
 
   // Establish our Server-Side Events channel
-  info('Listening on event stream');
+  request.logger.info('Listening on event stream');
   let stream = eventstream.get(request.yar.id);
   if (!stream) {
     // The session persisted but the server went down and lost the in-memory stream. Create a new one to use

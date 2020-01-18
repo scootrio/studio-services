@@ -3,8 +3,6 @@
  *
  * See the `deploy.js` file for more information about how deployments are handled by Scootr.
  */
-const { trace } = require('./logger');
-
 const _queues = {};
 
 /**
@@ -85,9 +83,7 @@ function queue(name) {
         (_options.maxConcurrent < 0 || (_options.maxConcurrent > 0 && _running < _options.maxConcurrent)) &&
         _requests.length > 0
       ) {
-        trace('Processing job from queue "' + name + '"');
         await action(pull());
-        trace('Job finished');
       } else {
         await _sleep(_options.pollMs);
       }
@@ -101,7 +97,6 @@ function queue(name) {
    * Closes the queue, causing all processors to terminate and prevent further pushing, pulling, and processing.
    */
   function close() {
-    trace('Closing job queue: ' + name);
     _open = false;
     delete _queues[name];
   }
