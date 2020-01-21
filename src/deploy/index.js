@@ -17,7 +17,13 @@ const logger = require('../util/logger');
 
 async function processRequest({ id, config }) {
   logger.info('Processing request for session', id);
-  const producer = eventstream.get(id);
+  let producer = eventstream.get(id);
+
+  if (!producer) {
+    // The client may have disconnected. Create a new event stream to publish events on that the client can connect
+    // to later
+    producer = eventstream.create(id);
+  }
 
   producer.emit('deployment:progress', { message: 'Building application' });
 
