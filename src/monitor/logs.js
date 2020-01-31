@@ -8,13 +8,10 @@ const path = require('path');
 const { Duplex } = require('stream');
 const logger = require('../util/logger');
 
-const kEvents = Symbol('events');
-
 class LogEventDuplexStream extends Duplex {
   constructor(options) {
     super(options);
     this._compressor = null;
-    this[kEvents] = [];
   }
 
   _write(chunk, encoding, callback) {
@@ -24,7 +21,6 @@ class LogEventDuplexStream extends Duplex {
     const data = { message: chunk };
     const event = `event: logs:entry\ndata: ${JSON.stringify(data)}\n\n`;
     logger.trace('Transformed event\n' + event);
-    //this[kEvents].push(event);
     this.push(event);
     this._compressor.flush();
     callback();
