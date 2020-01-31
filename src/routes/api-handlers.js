@@ -1,5 +1,6 @@
 const Boom = require('@hapi/boom');
 const eventstream = require('../util/eventstream');
+const { createSseLogStreamForCompute } = require('../monitor/logs');
 
 function handlePostToDeploy(request, h) {
   request.queue('requests').push({ id: request.yar.id, config: request.payload });
@@ -43,8 +44,30 @@ function handleGetToStreamListen(request, h) {
     .header('Connection', 'keep-alive');
 }
 
+function handleGetToLogsForCompute(request, h) {
+  const name = request.params.name;
+  request.logger.info('Fetching logs for', name);
+
+  const logs = createSseLogStreamForCompute(name);
+
+  function killLogOnClose() {
+    logs.close();
+  }
+
+  request.raw.req.on('close', killLogOnClose);
+  request.raw.req.on('exit', killLogOnClose);
+
+  return h
+    .response(logs.events)
+    .code(200)
+    .type('text/event-stream; charset=utf-8')
+    .header('Cache-Control', 'no-cache')
+    .header('Connection', 'keep-alive');
+}
+
 module.exports = {
   handlePostToDeploy,
   handleGetToStreamSubscribe,
-  handleGetToStreamListen
+  handleGetToStreamListen,
+  handleGetToLogsForCompute
 };

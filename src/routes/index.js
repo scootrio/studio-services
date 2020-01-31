@@ -25,6 +25,17 @@ const routes = [
         socket: false
       }
     }
+  },
+  {
+    method: 'GET',
+    path: api('/logs/{name}'),
+    handler: apiHandlers.handleGetToLogsForCompute,
+    options: {
+      timeout: {
+        server: false,
+        socket: false
+      }
+    }
   }
 ];
 

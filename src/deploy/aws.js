@@ -1,11 +1,14 @@
 const scootr = require('scootr');
 const { driver, enums } = require('scootr-aws');
+const logger = require('../util/logger');
 
 function buildForAws(config) {
   const compute = {};
   const storage = {};
   const internalEvents = {};
   const externalEvents = {};
+
+  logger.debug('Building for AWS', config);
 
   for (let c of config.compute) {
     compute[c.id] = scootr
@@ -75,6 +78,7 @@ function buildForAws(config) {
     deploy: async function() {
       // Deploy our application and get the driver result
       const result = await app.deploy(driver, config.app.region);
+      logger.debug('Finished deployment', result);
 
       // Map our driver result back into configuration to give back to the client
       const results = {
