@@ -36,8 +36,9 @@ class LogEventDuplexStream extends Duplex {
 }
 
 function createSseLogStreamForCompute(computeName) {
-  const command = 'serverless';
-  const args = ['logs', '-f', computeName, '--startTime', '30m', '-t'];
+  const command = 'node';
+  const script = path.join(process.cwd(), 'node_modules', 'serverless', 'bin', 'serverless');
+  const args = [script, 'logs', '-f', computeName, '--startTime', '30m', '-t'];
 
   logger.debug('Running', command, args.join(' '));
 
